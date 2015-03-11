@@ -1,2 +1,0 @@
-# EYT
-sample code
