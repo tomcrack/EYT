@@ -1,0 +1,38 @@
+import nltk
+import pypyodbc
+ 
+text = raw_input() ##input from user
+token = nltk.word_tokenize(text) ##split the sentence into token
+print(token)
+tagged = nltk.pos_tag(token) ##r=tag each token with their corresponding part of speech tags
+print(tagged)
+ 
+ 
+class Database(object):
+    def __init__(self):
+        self.connected = False
+        self.conn = None
+        self.cur = None
+ 
+    def connect(self):
+        if not self.connected:
+            self.conn = pypyodbc.connect('DRIVER={SQL Server};SERVER=localhost;DATABASE=Dictionary') ##Connect to my database using pypyodbc
+            self.connected = True
+            self.cur = self.conn.cursor() 
+ 
+    def search(self, tuples):
+        if not self.connected:
+            self.connect()
+ 
+        queryparams = [t[0] for t in tuples]
+        query = 'SELECT English,TarLan FROM Words WHERE English IN ({})'.format(', '.join(['?'] * len(queryparams)))
+        self.cur.execute(query, queryparams)
+        eng_to_yba = dict(self.cur)
+        _output = [eng_to_yba[l[0]] for l in tuples]
+        result = " ".join([x for x in _output])
+        return result
+ 
+ 
+get = Database()
+output = get.search(tagged)
+print(output)
